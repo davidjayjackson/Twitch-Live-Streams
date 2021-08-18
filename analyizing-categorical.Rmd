@@ -1,0 +1,67 @@
+---
+title: "Categorical Varibles"
+author: "David Jackson"
+date: "8/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(tidyverse)
+library(scales)
+```
+
+## Import Audio Data
+
+```{r}
+children_books <- read_excel("./AudioBookDataFinal.xlsx")
+children_books <- janitor::clean_names(children_books)
+```
+```{r}
+
+books_longer <- children_books %>% select (yr:dig_ct_f) %>%
+   pivot_longer(cols=bkct_a:dig_ct_f,names_to = "library",values_to = "Book") 
+
+books_longer$race <- as.factor(books_longer$race)
+books_longer$library <- as.factor(books_longer$library)
+books_longer$Book <- as.factor(books_longer$Book)
+```
+
+### Desciptive Stats
+
+```{r}
+books_longer$race <- as.character(books_longer$race)
+table(books_longer$race)
+barplot(table(books_longer$race))
+```
+```{r}
+books_longer$author <- as.character(books_longer$author)
+table(books_longer$author)
+barplot(table(books_longer$author),horiz = TRUE)
+```
+```{r}
+race_percent <- prop.table(table(books_longer$race))
+barplot(race_percent,horiz = TRUE)
+```
+```{r}
+books_longer$library <- as.character(books_longer$library)
+books_longer$Book <- as.character(books_longer$Book)
+
+```
+### Tidyverse Way
+
+```{r}
+books_longer %>% group_by(race) %>%
+        summarise( Count = n())   %>%
+           ggplot() + geom_col(aes(x=reorder(race,Count),y=Count)) + coord_flip() +
+  labs(title = "Count of Books by Race",x="Race of main charactor",y="Book Count")
+```
+
+```{r}
+books_longer %>% group_by(race) %>%
+        summarise( Count = n())   %>%
+        mutate(Per = Count/sum(Count)) %>%
+      ggplot() + geom_col(aes(x=reorder(race,Count),y=Per)) + coord_flip() +
+  labs(title = "Percent of Books by Race",x="Race of main charactor",y="Book Count") + scale_y_continuous(labels = percent)
+```
