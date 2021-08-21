@@ -1,0 +1,43 @@
+---
+title: "Untitled"
+author: "David Jackson"
+date: "8/20/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(scales)
+```
+
+## R Markdown
+
+```{r}
+rm(list=ls())
+df <- read.csv("./dietary-compositions-by-commodity-group.csv")
+df$Year <- as.factor(df$Year)
+```
+```{r}
+calories_longer <- df %>% pivot_longer(cols = Sugar:Alcoholic,names_to = "Commodity",
+                    values_to = "Kiliocalories")
+```
+#### Dlookr : Diagnose Numeric
+
+```{r}
+# df %>% dlookr::describe()
+df%>%dlookr::diagnose_numeric()
+```
+
+### Skrim Summary
+
+```{r}
+df %>% skimr::skim()
+```
+
+#### dplyr: Glimspe
+
+```{r}
+df %>% glimpse() %>% flextable::flextable()
+```
+
