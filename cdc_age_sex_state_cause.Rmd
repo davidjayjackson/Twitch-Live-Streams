@@ -1,0 +1,108 @@
+---
+title: "Covid-19 Deaths by State and Age and Sex"
+author: "David Jackson"
+date: "8/30/2021"
+output: 
+  html_document: 
+    fig_width: 8
+    fig_height: 6
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(scales)
+```
+
+## US CDC Covid-19 by State, Age Group and Sex: 2021-08-25
+
+
+```{r}
+rm(list=ls())
+cdc <- read_csv("https://data.cdc.gov/resource/9bhg-hcku.csv") %>%
+  select(-data_as_of,-start_date,-end_date,-year,-month,
+         -pneumonia_and_covid_19_deaths,-pneumonia_influenza_or_covid,-footnote) %>%
+  filter(age_group %in% c("45-54 years","55-64 years","65-74 years","75-84 years","85 years and over","All Ages"))
+
+cdc$sex <- as.factor(cdc$sex)
+cdc$age_group <- as.factor(cdc$age_group)
+summary(cdc)
+```
+## Pivot Longer by State, Age, Sex, Cause of Deaths
+
+```{r}
+cdc_longer <- cdc %>% pivot_longer(cols=covid_19_deaths:influenza_deaths,names_to = "Cause", values_to = "Deaths") 
+```
+
+## Total Deaths by Age Group 
+
+
+```{r}
+cdc_longer %>% filter(Cause =="total_deaths" & state =="United States" & sex =="All Sexes") %>% ggplot(aes(x=age_group,y=Deaths)) + geom_col() +
+  labs(title = "US Total Deaths by Age Group as of Aug. 25, 2021",
+       subtitle="(covid_19,pneumonia and  influenza)",caption="(Source: US CDC)") +
+  scale_y_continuous(labels = comma)
+```
+
+
+```{r}
+cdc_longer %>% filter(Cause =="total_deaths" & state =="United States" & sex !="All Sexes") %>% ggplot(aes(x=age_group,y=Deaths)) + geom_col() +
+  labs(title = "US Total Deaths by Age Group as of Aug. 25, 2021",
+       subtitle="(covid_19,pneumonia and  influenza)",caption="(Source: US CDC)") +
+  scale_y_continuous(labels = comma) + facet_wrap(~sex) +
+  theme(axis.text.x = element_text(angle = 45))
+```
+
+
+```{r}
+cdc_longer %>% filter(Cause !="total_deaths" & state =="United States" & sex =="All Sexes") %>% ggplot(aes(x=age_group,y=Deaths,fill=Cause)) + geom_col() +
+  labs(title = "US Total Deaths by Age Group and Cause as of Aug. 25, 2021",
+       subtitle="(covid_19,pneumonia and  influenza)",caption="(Source: US CDC)") +
+  scale_y_continuous(labels = comma)
+```
+
+
+```{r}
+cdc_longer %>% filter(Cause !="total_deaths" & state =="United States" & sex !="All Sexes") %>% ggplot(aes(x=age_group,y=Deaths,fill=Cause)) + geom_col() +
+  labs(title = "US Total Deaths by Age Group and Cause as of Aug. 25, 2021",
+       subtitle="(covid_19,pneumonia and  influenza)",caption="(Source: US CDC)") +
+  scale_y_continuous(labels = comma) + facet_wrap(~sex) +
+  theme(axis.text.x = element_text(angle = 45))
+```
+
+## Top Five(5) State by Covid-19 Deaths
+
+```{r}
+cdc_states <- cdc_longer %>% filter(Cause =="total_deaths" & state != "United States" & sex =="All Sexes" & age_group =="All Ages") %>% top_n(5) 
+```
+```{r}
+ggplot(cdc_states) + geom_col(aes(x=reorder(state,Deaths),y=Deaths)) + scale_y_continuous(labels = comma) + labs(title = "Top Fve states by Covid-19 related deaths") + coord_flip()
+  
+```
+
+
+
+```{r}
+top_states <- cdc_longer %>% filter(state %in% c("Arizona","California",
+"Florida","Georgia","Illinois"))
+
+```
+
+## Deaths by State and Age Group
+
+```{r}
+top_states %>% filter(Cause == "total_deaths") %>%
+  ggplot(aes(x=Deaths,y=age_group)) + geom_col() +
+  facet_wrap(~state) +
+  theme(axis.text.x = element_text(angle = 45)) +
+  labs(title ="Top 5 States Total Deaths and Age Group")
+```
+
+```{r}
+top_states %>% filter(Cause != "total_deaths") %>%
+  ggplot(aes(x=Deaths,y=Cause)) + geom_col() +
+  facet_wrap(~state) +
+  theme(axis.text.x = element_text(angle = 45)) +
+  labs(title ="Top 5 States by Cause of Deaths") +
+  scale_x_continuous(labels = comma)
+```
