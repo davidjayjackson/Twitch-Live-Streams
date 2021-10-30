@@ -85,3 +85,11 @@ clean_longer %>% filter(name == "chat_messages") %>%
   ggplot(aes(x=date,y=value)) + geom_line() +
   labs(title = "Chat Messages  by Day",x="Date ",y="Unique Views") + geom_smooth(aes(x=date,y=value),method="glm")
 ```
+
+### Minutes Streamed vs Minutes Watched
+
+```{r}
+twitch_clean %>% 
+  ggplot(aes(x=minutes_watched,y=minutes_streamed)) + geom_point() +
+  labs(title ="Minutes Watched vs Minutes Streamed",x="Minutes Watched",y="Minutes Streamed") + geom_smooth(aes(x=minutes_watched,y=minutes_streamed),method="glm")
+```
