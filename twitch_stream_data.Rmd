@@ -1,0 +1,87 @@
+---
+title: "Twitch Data Analysis"
+author: "David Jackson"
+date: "10/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,error = FALSE,message = FALSE)
+library(tidyverse)
+library(scales)
+library(lubridate)
+library(janitor)
+library(twitcher)
+```
+
+## R Markdown
+
+
+```{r cars}
+rm(list=ls())
+twitch_stream <- read_csv("./Channel Analytics and Revenue by day from Sept_30_2021 to Oct_29_2021.csv") %>% clean_names() 
+# twitch_stream$date <- as.factor(twitch_stream$date)
+
+twitch_stream$date <- twitch_stream$date %>% lubridate::as_date(date, format = "%A %b %d  %Y")
+```
+```{r}
+twitch_clean <- twitch_stream[, colSums(twitch_stream != 0) > 0]
+clean_longer <- twitch_clean %>% pivot_longer(cols = average_viewers:unique_viewers)
+```
+
+###  Plot of Average Viewers
+
+```{r}
+clean_longer %>% filter(name == "follows") %>%
+  ggplot(aes(x=date,y=value)) + geom_line() +
+  labs(title = "Followers Added by Day",x="Date Added",y="Followers") + geom_smooth(aes(x=date,y=value),method ="glm")
+``` 
+
+###  Plot of Chatters by Day
+
+```{r}
+clean_longer %>% filter(name == "chatters") %>%
+  ggplot(aes(x=date,y=value)) + geom_line() +
+  labs(title = "Chatters  by Day",x="Date Added",y="Chatters") + geom_smooth(aes(x=date,y=value),method = "glm")
+``` 
+
+###  Plot of Minutes Watched
+
+```{r}
+clean_longer %>% filter(name == "minutes_watched") %>%
+  ggplot(aes(x=date,y=value)) + geom_line() +
+  labs(title = "Minutes Watched  by Day",x="Date ",y="Minutes Watched") + geom_smooth(aes(x=date,y=value),method ="glm")
+``` 
+
+###  Plot of Minutes Streamed
+
+```{r}
+clean_longer %>% filter(name == "minutes_streamed") %>%
+  ggplot(aes(x=date,y=value)) + geom_line() +
+  labs(title = "Minutes Stream  by Day",x="Date ",y="Minutes Streamed") + geom_smooth(aes(x=date,y=value),method="glm")
+``` 
+
+###  Plot of Live Views
+
+```{r}
+clean_longer %>% filter(name == "live_views") %>%
+  ggplot(aes(x=date,y=value)) + geom_line() +
+  labs(title = "Live Views  by Day",x="Date ",y="Live Views") + geom_smooth(aes(x=date,y=value),method="glm")
+```
+
+
+### Unique Viewers
+
+```{r}
+clean_longer %>% filter(name == "unique_viewers") %>%
+  ggplot(aes(x=date,y=value)) + geom_line() +
+  labs(title = "Unique Views  by Day",x="Date ",y="Unique Views") + geom_smooth(aes(x=date,y=value),method="glm")
+```
+
+### Chat Messages 
+
+```{r}
+clean_longer %>% filter(name == "chat_messages") %>%
+  ggplot(aes(x=date,y=value)) + geom_line() +
+  labs(title = "Chat Messages  by Day",x="Date ",y="Unique Views") + geom_smooth(aes(x=date,y=value),method="glm")
+```
